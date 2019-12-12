@@ -1378,6 +1378,25 @@ class ServerTrustPolicyCompositeTestCase: ServerTrustPolicyTestCase {
         // Then
         XCTAssertFalse(result.isSuccess, "server trust should not pass evaluation")
     }
+    
+    
+    func testThatMissingIntermediateCertificateInChainFailsEvaluation() {
+        // Given
+        let host = "test.alamofire.org"
+        let certs = [
+            TestCertificates.leafDNSNameAndURI,
+            TestCertificates.rootCA,
+        ]
+        let trust = TestTrusts.trustWithCertificates(certs)
+        // When
+    //    let serverTrustPolicy = ServerTrustPolicy.pinCertificates(certificates: certs, validateCertificateChain: true, validateHost: false)
+        let serverTrustPolicy =  PinnedCertificatesTrustEvaluator(certificates: certs, acceptSelfSignedCertificates: true, performDefaultValidation: true, validateHost: true)
+        let serverTrustIsValid = Result { try serverTrustPolicy.evaluate(trust, forHost: host)}
+        // Then
+        XCTAssertTrue(serverTrustIsValid.isFailure, "server trust should not pass evaluation")
+        
+      
+    }
 }
 
 // MARK: -
